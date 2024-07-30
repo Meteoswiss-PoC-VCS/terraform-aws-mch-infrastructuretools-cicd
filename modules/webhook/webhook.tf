@@ -70,7 +70,7 @@ resource "aws_lambda_permission" "webhook" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.webhook.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.webhook.execution_arn}/*/*/${local.webhook_endpoint}"
+  source_arn    = "${aws_api_gateway_rest_api.webhook.execution_arn}/*/*/${local.webhook_endpoint}"
   lifecycle {
     replace_triggered_by = [aws_ssm_parameter.runner_matcher_config, null_resource.github_app_parameters]
   }

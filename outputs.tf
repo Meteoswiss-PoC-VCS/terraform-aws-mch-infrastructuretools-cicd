@@ -36,7 +36,7 @@ output "webhook" {
     lambda           = module.webhook.lambda
     lambda_log_group = module.webhook.lambda_log_group
     lambda_role      = module.webhook.role
-    endpoint         = "${module.webhook.gateway_endpoint}/${module.webhook.endpoint_relative_path}"
+    endpoint         = try("${module.webhook.gateway_endpoint}/${module.webhook.endpoint_relative_path}", "No endpoint. gateway v2 not used")
   }
 }
 

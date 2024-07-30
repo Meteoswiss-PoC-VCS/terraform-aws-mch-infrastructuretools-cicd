@@ -36,7 +36,7 @@ output "webhook" {
     lambda           = module.webhook.lambda
     lambda_log_group = module.webhook.lambda_log_group
     lambda_role      = module.webhook.role
-    endpoint         = "${module.webhook.gateway.api_endpoint}/${module.webhook.endpoint_relative_path}"
+    endpoint         = "${module.webhook.gateway.invoke_url}/${module.webhook.endpoint_relative_path}"
   }
 }
 

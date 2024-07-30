@@ -92,7 +92,7 @@ resource "aws_api_gateway_method_settings" "api_method_settings" {
   method_path = "*/*"
 
   settings {
-    logging_level   = "INFO"
+    logging_level   = "OFF"
     caching_enabled = true
   }
 }

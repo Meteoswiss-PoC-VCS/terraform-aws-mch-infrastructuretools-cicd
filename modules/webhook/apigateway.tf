@@ -12,19 +12,11 @@ resource "aws_api_gateway_resource" "webhook_resource" {
   path_part   = "{proxy+}"
 }
 
-resource "aws_api_gateway_method" "webhook_method" {
-  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
-  rest_api_id   = aws_api_gateway_rest_api.webhook[count.index].id
-  resource_id   = aws_api_gateway_resource.webhook_resource[count.index].id
-  http_method   = "POST"
-  authorization = "NONE"
-}
-
 resource "aws_api_gateway_integration" "webhook_integration" {
   count       = var.enable_webhook_apigateway_v1 ? 1 : 0
   rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
   resource_id = aws_api_gateway_resource.webhook_resource[count.index].id
-  http_method = aws_api_gateway_method.webhook_method[count.index].http_method
+  http_method = aws_api_gateway_method.proxy[count.index].http_method
 
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
@@ -50,24 +42,10 @@ resource "aws_api_gateway_method" "proxy" {
 }
 
 resource "aws_api_gateway_deployment" "webhook_deployment" {
-  count       = var.enable_webhook_apigateway_v1 ? 1 : 0
-  rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
+  count      = var.enable_webhook_apigateway_v1 ? 1 : 0
+  depends_on = [aws_api_gateway_integration.webhook_integration]
 
-  triggers = {
-    # NOTE: The configuration below will satisfy ordering considerations,
-    #       but not pick up all future REST API changes. More advanced patterns
-    #       are possible, such as using the filesha1() function against the
-    #       Terraform configuration file(s) or removing the .id references to
-    #       calculate a hash against whole resources. Be aware that using whole
-    #       resources will show a difference after the initial implementation.
-    #       It will stabilize to only change when resources change afterwards.
-    redeployment = sha1(jsonencode([
-      aws_api_gateway_resource.webhook_resource.id,
-      aws_api_gateway_method.webhook_method.id,
-      aws_api_gateway_integration.webhook_integration.id,
-      aws_api_gateway_method.proxy.id,
-    ]))
-  }
+  rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
 
   lifecycle {
     create_before_destroy = true

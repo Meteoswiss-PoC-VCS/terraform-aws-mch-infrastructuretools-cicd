@@ -73,7 +73,7 @@ resource "aws_api_gateway_method" "proxy" {
 resource "aws_api_gateway_deployment" "api_deployment" {
   depends_on = [aws_api_gateway_integration.webhook]
 
-  rest_api_id = aws_api_gateway_rest_api.function_api.id
+  rest_api_id = aws_api_gateway_rest_api.webhook.id
 
   lifecycle {
     create_before_destroy = true

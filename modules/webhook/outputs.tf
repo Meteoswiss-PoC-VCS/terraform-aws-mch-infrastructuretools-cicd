@@ -2,6 +2,10 @@ output "gateway" {
   value = aws_apigatewayv2_api.webhook
 }
 
+output "gatewayv1" {
+  value = aws_api_gateway_rest_api.webhook[0]
+}
+
 output "lambda" {
   value = aws_lambda_function.webhook
 }
@@ -16,4 +20,19 @@ output "role" {
 
 output "endpoint_relative_path" {
   value = local.webhook_endpoint
+}
+
+output "rest_api_id" {
+  description = "REST API id"
+  value       = aws_api_gateway_rest_api.webhook[0].id
+}
+
+output "deployment_id" {
+  description = "Deployment id"
+  value       = aws_api_gateway_deployment.webhook_deployment[0].id
+}
+
+output "deployment_invoke_url" {
+  description = "Deployment invoke url"
+  value       = aws_api_gateway_deployment.webhook_deployment[0].invoke_url
 }

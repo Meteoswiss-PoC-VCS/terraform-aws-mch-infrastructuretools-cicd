@@ -9,7 +9,7 @@ resource "aws_api_gateway_resource" "webhook_resource" {
   count       = var.enable_webhook_apigateway_v1 ? 1 : 0
   rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
   parent_id   = aws_api_gateway_rest_api.webhook[count.index].root_resource_id
-  path_part   = local.webhook_endpoint
+  path_part   = "{proxy+}"
 }
 
 resource "aws_api_gateway_method" "webhook_method" {
@@ -30,7 +30,23 @@ resource "aws_api_gateway_integration" "webhook_integration" {
   type                    = "AWS_PROXY"
   uri                     = aws_lambda_function.webhook.invoke_arn
 
-  passthrough_behavior = "WHEN_NO_MATCH"
+  cache_key_parameters = ["method.request.path.proxy"]
+
+  request_parameters = {
+    "integration.request.path.proxy" = "method.request.path.proxy"
+  }
+}
+
+resource "aws_api_gateway_method" "proxy" {
+  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
+  rest_api_id   = aws_api_gateway_rest_api.webhook[count.index].id
+  resource_id   = aws_api_gateway_resource.webhook_resource[count.index].id
+  http_method   = "ANY"
+  authorization = "NONE"
+
+  request_parameters = {
+    "method.request.path.proxy" = true
+  }
 }
 
 resource "aws_api_gateway_deployment" "webhook_deployment" {
@@ -38,6 +54,10 @@ resource "aws_api_gateway_deployment" "webhook_deployment" {
   depends_on  = [aws_api_gateway_integration.webhook_integration]
   rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
   stage_name  = var.aws_apigateway_stage
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_api_gateway_stage" "webhook_stage" {
@@ -54,4 +74,16 @@ resource "aws_api_gateway_stage" "webhook_stage" {
     }
   }
   tags = var.tags
+}
+
+resource "aws_api_gateway_method_settings" "api_method_settings" {
+  count       = var.enable_webhook_apigateway_v1 ? 1 : 0
+  rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
+  stage_name  = aws_api_gateway_stage.webhook_stage[count.index].stage_name
+  method_path = "*/*"
+
+  settings {
+    logging_level   = "OFF"
+    caching_enabled = true
+  }
 }

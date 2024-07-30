@@ -40,6 +40,19 @@ output "webhook" {
   }
 }
 
+output "webhook_v1" {
+  value = {
+    gateway               = module.webhook.gatewayv1
+    rest_api_id           = module.webhook.rest_api_id
+    deployment_id         = module.webhook.deployment_id
+    deployment_invoke_url = module.webhook.deployment_invoke_url
+    lambda                = module.webhook.lambda
+    lambda_log_group      = module.webhook.lambda_log_group
+    lambda_role           = module.webhook.role
+    endpoint              = "${module.webhook.gatewayv1.api_endpoint}/${module.webhook.endpoint_relative_path}"
+  }
+}
+
 output "ssm_parameters" {
   value = module.ssm.parameters
 }

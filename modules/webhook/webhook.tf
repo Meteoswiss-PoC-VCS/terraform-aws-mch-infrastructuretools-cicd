@@ -66,7 +66,7 @@ resource "aws_cloudwatch_log_group" "webhook" {
 }
 
 resource "aws_lambda_permission" "webhook" {
-  count = var.enable_webhook_apigateway_v1 ? 0 : 1
+  count         = var.enable_webhook_apigateway_v1 ? 0 : 1
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.webhook.function_name
@@ -78,7 +78,7 @@ resource "aws_lambda_permission" "webhook" {
 }
 
 resource "aws_lambda_permission" "webhook_v2" {
-  count = var.enable_webhook_apigateway_v1 ? 1 : 0
+  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.webhook.function_name

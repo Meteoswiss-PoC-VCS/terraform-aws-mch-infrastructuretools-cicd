@@ -5,14 +5,14 @@ locals {
 }
 
 resource "aws_apigatewayv2_api" "webhook" {
-  count = var.enable_webhook_apigateway_v1 ? 0 : 1
+  count         = var.enable_webhook_apigateway_v1 ? 0 : 1
   name          = "${var.prefix}-github-action-webhook"
   protocol_type = "HTTP"
   tags          = var.tags
 }
 
 resource "aws_apigatewayv2_route" "webhook" {
-  count = var.enable_webhook_apigateway_v1 ? 0 : 1
+  count     = var.enable_webhook_apigateway_v1 ? 0 : 1
   api_id    = aws_apigatewayv2_api.webhook[count.index].id
   route_key = "POST /${local.webhook_endpoint}"
   target    = "integrations/${aws_apigatewayv2_integration.webhook[count.index].id}"

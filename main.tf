@@ -124,7 +124,7 @@ module "ssm" {
 module "webhook" {
   source = "./modules/webhook"
 
-  enable_webhook_apigateway_v1= var.enable_webhook_apigateway_v1
+  enable_webhook_apigateway_v1 = var.enable_webhook_apigateway_v1
 
   ssm_paths = {
     root    = local.ssm_root_path
@@ -175,7 +175,7 @@ module "webhook" {
   aws_partition             = var.aws_partition
 
   aws_apigateway_stage = var.aws_apigateway_stage
-  
+
   log_level = var.log_level
 }
 

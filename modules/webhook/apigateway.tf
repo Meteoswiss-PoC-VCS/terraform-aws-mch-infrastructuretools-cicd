@@ -54,10 +54,6 @@ resource "aws_api_gateway_deployment" "webhook_deployment" {
   depends_on  = [aws_api_gateway_integration.webhook_integration]
   rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
   stage_name  = var.aws_apigateway_stage
-
-  lifecycle {
-    create_before_destroy = true
-  }
 }
 
 resource "aws_api_gateway_stage" "webhook_stage" {

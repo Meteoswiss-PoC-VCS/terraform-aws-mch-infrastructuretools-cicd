@@ -13,9 +13,9 @@ resource "aws_apigatewayv2_api" "webhook" {
 
 resource "aws_apigatewayv2_route" "webhook" {
   count = var.enable_webhook_apigateway_v1 ? 0 : 1
-  api_id    = aws_apigatewayv2_api.webhook.id
+  api_id    = aws_apigatewayv2_api.webhook[count.index].id
   route_key = "POST /${local.webhook_endpoint}"
-  target    = "integrations/${aws_apigatewayv2_integration.webhook.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.webhook[count.index].id}"
 }
 
 resource "aws_apigatewayv2_stage" "webhook" {
@@ -29,7 +29,7 @@ resource "aws_apigatewayv2_stage" "webhook" {
     ]
   }
 
-  api_id      = aws_apigatewayv2_api.webhook.id
+  api_id      = aws_apigatewayv2_api.webhook[count.index].id
   name        = "$default"
   auto_deploy = true
   dynamic "access_log_settings" {
@@ -51,7 +51,7 @@ resource "aws_apigatewayv2_integration" "webhook" {
     ]
   }
 
-  api_id           = aws_apigatewayv2_api.webhook.id
+  api_id           = aws_apigatewayv2_api.webhook[count.index].id
   integration_type = "AWS_PROXY"
 
   connection_type    = "INTERNET"

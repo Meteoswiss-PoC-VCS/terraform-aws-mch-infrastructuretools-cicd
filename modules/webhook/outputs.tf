@@ -18,6 +18,11 @@ output "role" {
   value = aws_iam_role.webhook_lambda
 }
 
+output "gateway_endpoint" {
+  description = "Gateway endpoint"
+  value       = one(aws_apigatewayv2_api.webhook[*].api_endpoint)
+}
+
 output "endpoint_relative_path" {
   value = local.webhook_endpoint
 }

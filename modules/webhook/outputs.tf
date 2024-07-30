@@ -1,5 +1,5 @@
 output "gateway" {
-  value = aws_api_gateway_rest_api.webhook
+  value = aws_api_gateway_stage.api_stage
 }
 
 output "lambda" {

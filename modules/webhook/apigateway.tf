@@ -50,7 +50,7 @@ resource "aws_api_gateway_method" "root" {
 
 # Integrate API Gateway root route with Lambda function
 resource "aws_api_gateway_integration" "root" {
-  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
+  count                   = var.enable_webhook_apigateway_v1 ? 1 : 0
   rest_api_id             = aws_api_gateway_rest_api.webhook[count.index].id
   resource_id             = aws_api_gateway_rest_api.webhook[count.index].root_resource_id
   http_method             = aws_api_gateway_method.root[count.index].http_method

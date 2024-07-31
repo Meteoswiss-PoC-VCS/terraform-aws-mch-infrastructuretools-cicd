@@ -107,3 +107,28 @@ resource "aws_api_gateway_method_settings" "api_method_settings" {
     caching_enabled = true
   }
 }
+
+data "aws_iam_policy_document" "api_gateway_cloudwatch_role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["apigateway.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "api_gateway_cloudwatch_role" {
+  name               = "${var.prefix}-api_gateway_cloudwatch_role"
+  assume_role_policy = data.aws_iam_policy_document.api_gateway_cloudwatch_role.json
+}
+
+resource "aws_iam_role_policy" "api_gateway_cloudwatch_policy" {
+  name = "api_gateway_cloudwatch_policy"
+  role = aws_iam_role.api_gateway_cloudwatch_role.id
+
+  policy = templatefile("${path.module}/policies/apigateway-cloudwatch.json", {
+    log_group_arn = aws_cloudwatch_log_group.webhook.arn
+  })
+}

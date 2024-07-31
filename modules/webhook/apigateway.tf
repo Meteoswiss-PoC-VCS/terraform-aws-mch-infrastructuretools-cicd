@@ -119,6 +119,10 @@ data "aws_iam_policy_document" "api_gateway_cloudwatch_role" {
   }
 }
 
+resource "aws_api_gateway_account" "gateway_account" {
+  cloudwatch_role_arn = aws_iam_role.api_gateway_cloudwatch_role.arn
+}
+
 resource "aws_iam_role" "api_gateway_cloudwatch_role" {
   name               = "${var.prefix}-api_gateway_cloudwatch_role"
   assume_role_policy = data.aws_iam_policy_document.api_gateway_cloudwatch_role.json

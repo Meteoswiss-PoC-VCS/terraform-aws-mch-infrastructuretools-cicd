@@ -80,11 +80,10 @@ resource "aws_api_gateway_deployment" "webhook_deployment" {
   }
 }
 
-
 resource "aws_api_gateway_stage" "webhook_stage" {
   count         = var.enable_webhook_apigateway_v1 ? 1 : 0
   rest_api_id   = aws_api_gateway_rest_api.webhook[count.index].id
-  stage_name    = "$default"
+  stage_name    = "devt"
   deployment_id = aws_api_gateway_deployment.webhook_deployment[count.index].id
 
   dynamic "access_log_settings" {

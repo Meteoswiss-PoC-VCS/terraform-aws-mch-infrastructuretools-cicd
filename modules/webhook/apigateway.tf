@@ -9,7 +9,7 @@ resource "aws_api_gateway_resource" "webhook_resource" {
   count       = var.enable_webhook_apigateway_v1 ? 1 : 0
   rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
   parent_id   = aws_api_gateway_rest_api.webhook[count.index].root_resource_id
-  path_part   = "{proxy+}"
+  path_part   = "$default"
 }
 
 resource "aws_api_gateway_integration" "webhook_integration" {
@@ -40,12 +40,40 @@ resource "aws_api_gateway_method" "webhook_method" {
     "method.request.path.proxy" = true
   }
 }
+resource "aws_api_gateway_method" "root" {
+  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
+  rest_api_id   = aws_api_gateway_rest_api.webhook[count.index].id
+  resource_id   = aws_api_gateway_rest_api.webhook[count.index].root_resource_id
+  http_method   = "ANY"
+  authorization = "NONE"
+}
+
+# Integrate API Gateway root route with Lambda function
+resource "aws_api_gateway_integration" "root" {
+  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
+  rest_api_id             = aws_api_gateway_rest_api.webhook[count.index].id
+  resource_id             = aws_api_gateway_rest_api.webhook[count.index].root_resource_id
+  http_method             = aws_api_gateway_method.root[count.index].http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = aws_lambda_function.webhook.invoke_arn
+}
 
 resource "aws_api_gateway_deployment" "webhook_deployment" {
   count      = var.enable_webhook_apigateway_v1 ? 1 : 0
   depends_on = [aws_api_gateway_integration.webhook_integration]
 
   rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
+
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.webhook_resource,
+      aws_api_gateway_method.webhook_method,
+      aws_api_gateway_integration.webhook_integration,
+      aws_api_gateway_method.root,
+      aws_api_gateway_integration.root
+    ]))
+  }
 
   lifecycle {
     create_before_destroy = true

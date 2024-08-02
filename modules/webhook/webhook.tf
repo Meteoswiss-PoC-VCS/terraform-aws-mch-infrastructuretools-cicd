@@ -66,11 +66,40 @@ resource "aws_cloudwatch_log_group" "webhook" {
 }
 
 resource "aws_lambda_permission" "webhook" {
+  count         = var.enable_webhook_apigateway_v1 ? 0 : 1
   statement_id  = "AllowExecutionFromAPIGateway"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.webhook.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_apigatewayv2_api.webhook.execution_arn}/*/*/${local.webhook_endpoint}"
+  source_arn    = "${aws_apigatewayv2_api.webhook[count.index].webhook.execution_arn}/*/*/${local.webhook_endpoint}"
+  lifecycle {
+    replace_triggered_by = [aws_ssm_parameter.runner_matcher_config, null_resource.github_app_parameters]
+  }
+}
+
+resource "aws_lambda_permission" "webhook_v2" {
+  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.webhook.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.webhook[count.index].execution_arn}/*/*/${local.webhook_endpoint}"
+  lifecycle {
+    replace_triggered_by = [aws_ssm_parameter.runner_matcher_config, null_resource.github_app_parameters]
+  }
+}
+
+//************************************************
+// Add in this to support API GW testing in AWS Console.
+//************************************************
+resource "aws_lambda_permission" "apigw-post" {
+  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
+  statement_id  = "AllowAPIGatewayInvokePOST"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.webhook.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.webhook[count.index].execution_arn}/*/*/${local.webhook_endpoint}"
   lifecycle {
     replace_triggered_by = [aws_ssm_parameter.runner_matcher_config, null_resource.github_app_parameters]
   }

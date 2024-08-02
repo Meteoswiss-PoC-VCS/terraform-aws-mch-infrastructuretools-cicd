@@ -83,10 +83,20 @@ resource "aws_lambda_permission" "webhook_v2" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.webhook.function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.webhook[count.index].execution_arn}/*/${aws_api_gateway_method.webhook_method[count.index].http_method}${aws_api_gateway_resource.webhook_resource[count.index].path}"
-  lifecycle {
-    replace_triggered_by = [aws_ssm_parameter.runner_matcher_config, null_resource.github_app_parameters]
-  }
+  source_arn    = "${aws_api_gateway_rest_api.webhook[count.index].execution_arn}/*/*/${local.webhook_endpoint}"
+}
+
+//************************************************
+// Add in this to support API GW testing in AWS Console.
+//************************************************
+resource "aws_lambda_permission" "apigw-post" {
+  count         = var.enable_webhook_apigateway_v1 ? 1 : 0
+  statement_id  = "AllowAPIGatewayInvokePOST"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.webhook.function_name
+  principal     = "apigateway.amazonaws.com"
+
+  source_arn = "${aws_api_gateway_rest_api.webhook[count.index].execution_arn}/*/*/${local.webhook_endpoint}"
 }
 
 resource "null_resource" "github_app_parameters" {

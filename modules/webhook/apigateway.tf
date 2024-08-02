@@ -9,7 +9,7 @@ resource "aws_api_gateway_resource" "webhook_resource" {
   count       = var.enable_webhook_apigateway_v1 ? 1 : 0
   rest_api_id = aws_api_gateway_rest_api.webhook[count.index].id
   parent_id   = aws_api_gateway_rest_api.webhook[count.index].root_resource_id
-  path_part   = "$default"
+  path_part   = "${local.webhook_endpoint}"
 }
 
 resource "aws_api_gateway_integration" "webhook_integration" {

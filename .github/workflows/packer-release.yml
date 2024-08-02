@@ -1,0 +1,48 @@
+name: "Packer build"
+on:
+  workflow_dispatch:
+    inputs:
+      image_name:
+        type: choice
+        description: Which image shall be built?
+        options:
+        - "linux-al2023"
+        - "windows-core-2019"
+        - "windows-core-2022"
+        - "ubuntu-focal"
+        - "ubuntu-jammy"
+        - "ubuntu-jammy-arm64"
+        - "ubunut-noble"
+      runner_version:
+        description: Runner version
+        type: string
+      subnet_id:
+        description: Subnet Id
+        type: string
+env:
+  AWS_REGION: eu-central-2
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+jobs:
+  build_packer:
+    name: Build packer
+    runs-on: ubuntu-latest
+    container:
+      image: index.docker.io/hashicorp/packer@sha256:297bbbbbbf3ce9e0431ac1e8f02934b20e1197613f877b55dfdb1ebfd94eb748 # ratchet:index.docker.io/hashicorp/packer:1.8.6
+    defaults:
+      run:
+        working-directory: images/${{ image_name }}
+    steps:
+      - name: "Checkout"
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # ratchet:actions/checkout@v4
+      - name: packer init
+        run: packer init .
+      - name: check packer formatting
+        run: packer fmt -recursive -check=true .
+      - name: packer validate
+        run: packer validate -evaluate-datasources .
+      - name: packer build
+        run: packer build -var  "runner_version=${{ runner_version }}" -var "subnet_id=${{ subnet_id }}" .
+        env:
+            AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            AWS_DEFAULT_REGION: us-central-2

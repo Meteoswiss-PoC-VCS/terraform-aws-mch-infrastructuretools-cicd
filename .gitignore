@@ -18,6 +18,7 @@ secrets.auto.tfvars
 *.gz
 *.tgz
 *.env*
+.history/
 
 **/coverage/*
 
